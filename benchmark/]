@@ -1,0 +1,80 @@
+import numpy as np
+from tqdm import tqdm
+
+class RecommendationSystem():
+    def __init__(self, user_features, item_features, latent_dim=100, lr=1e-2, lr_decay=0.9, reg=1e-1, epochs=1e3):
+        self.latent_dim = latent_dim
+        self.lr = lr
+        self.lr_decay = lr_decay
+        self.reg = reg
+        self.epochs = epochs
+        self.user_features = user_features
+        self.item_features = item_features
+
+        self.user_matrix = np.random.normal(size=(X.shape[0], self.latent_dim))
+        self.item_matrix = np.random.normal(size=(X.shape[1], self.latent_dim))
+
+
+    def fit(self, X, y=None): # y is user for error evaluation; not training !
+        self.error_vector = list()
+        if y is not None: pbar = tqdm(range(self.epochs))
+
+        for epoch in range(int(self.epochs)):
+            for u_idx in range(X.shape[0]):
+                for i_idx in range(X.shape[1]):
+                    u = self.user_matrix[u_idx, :]
+                    i = self.item_matrix[i_idx, :]
+                    truth = X[u_idx][i_idx]
+                    if not truth: continue
+
+                    error = truth - u@i
+                    u_grad = self.reg*u - error*i
+                    i_grad = self.reg*i - error*u
+                    
+                    self.user_matrix[u_idx, :] -= self.lr * u_grad
+                    self.item_matrix[i_idx, :] -= self.lr * i_grad
+
+            self.lr *= self.lr_decay
+            if y is not None:
+                error = np.mean(((y - self.predict()) ** 2) * (y!=0)) ** 0.5
+                self.error_vector.append(error)
+                pbar.update(1)
+                pbar.set_postfix_str(f"Error: {round(error, 5)}")
+    
+    
+    def predict(self):
+        self.pred = self.user_matrix @ np.transpose(self.item_matrix)
+        self.pred_flat = np.vectorize(lambda l: 1 if l>=3.5 else -1)(self.pred)
+        return self.pred
+
+    def get_rmse(self, y):
+        rmse = (y - self.pred) ** 2
+        rmse = np.mean(rmse * (y!=0)) ** 0.5
+        return rmse
+
+    def get_accuracy(self):
+        return np.sum()
+
+    def get_precision(self):
+        pass
+
+    def get_diversity(self):
+        pass
+
+    def get_novelty(self):
+        pass
+    
+    def get_metrics(self):
+        self.predict()
+    
+
+
+    def recommend_items(K=5, user_id=None, user_features=None):
+        if (user_id is None) == (user_features is None):
+            print("It is required to pass either 'user_id' or 'user_features' to recommend items")
+            return None
+        
+        features = user_features if user_features is not None else self.user_features[user_id-1]
+        print(features, features.shape)
+        print("wawawa")
+        # TODO implement prediction using user & item features
